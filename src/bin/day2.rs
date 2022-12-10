@@ -30,6 +30,21 @@ impl RPS {
             _ => { 3 },
         }
     }
+
+    fn result(&self, oc: Outcome) -> usize {
+        use RPS::*;
+        use Outcome::*;
+        match (self, oc) {
+            (x, Draw) => x.outcome(*x),
+            (Paper, Win) => Scissors.outcome(Paper),
+            (Rock, Win) => Paper.outcome(Rock),
+            (Scissors, Win) => Rock.outcome(Scissors),
+
+            (Paper, Loss) => Rock.outcome(Paper),
+            (Rock, Loss) => Scissors.outcome(Rock),
+            (Scissors, Loss) => Paper.outcome(Scissors),
+        }
+    }
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -70,8 +85,8 @@ fn main() -> anyhow::Result<()> {
         let line = line?;
         let cmds = line.split(' ').collect::<Vec<_>>();
         let opp = RPS::from_str(cmds[0])?;
-        let me = RPS::from_str(cmds[1])?;
-        let outcome = me.outcome(opp);
+        let out = Outcome::from_str(cmds[1])?;
+        let outcome = opp.result(out);
         acc += outcome;
     }
     println!("{acc}");
