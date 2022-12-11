@@ -1,5 +1,7 @@
 use std::{collections::HashSet, io::{self, BufRead}};
 
+use itertools::Itertools;
+
 fn split_rucksack(s: &str) -> (&str, &str) {
     let len = s.len() / 2;
     s.split_at(len)
@@ -29,14 +31,16 @@ fn to_priority(c: char) -> u32 {
 fn main() -> anyhow::Result<()> {
     let stdin = io::stdin().lock();
     let mut total = Vec::new();
-    for line in stdin.lines() {
-        let line = line?;
-        if line.is_empty() {
+    for lines in stdin.lines().flatten().chunks(3).into_iter() {
+        let lines = lines.collect::<Vec<_>>();
+        if lines.len() < 3 {
             break;
         }
-        let (a, b) = split_rucksack(&line);
-        let common = common_items(a, b);
-        total.extend(common.into_iter());
+        let a = lines[0].chars().collect::<HashSet<_>>();
+        let b = lines[1].chars().collect::<HashSet<_>>();
+        let c = lines[2].chars().collect::<HashSet<_>>();
+        let all = &(&a & &b) & &c;
+        total.extend(all.into_iter());
     }
     println!("{}", sum_priorities(total.into_iter()));
     Ok(())
